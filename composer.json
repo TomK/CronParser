@@ -1,0 +1,22 @@
+{
+  "name":              "tomk/cronparser",
+  "description":       "Parse crontab format and get next/previous or check time",
+  "version":           "1.0.0",
+  "keywords":          ["crontab", "cron"],
+  "authors":           [
+    {
+      "name":     "Tom Kay",
+      "email":    "oridan82@gmail.com",
+      "homepage": "http://tomkay.me"
+    }
+  ],
+  "require-dev":       {
+    "phpunit/phpunit": "*"
+  },
+  "autoload":          {
+    "psr-4": {
+      "TomK\\CronParser\\": "src/"
+    }
+  },
+  "minimum-stability": "dev"
+}
