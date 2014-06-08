@@ -61,16 +61,23 @@ class CronParser
     {
       throw new \InvalidArgumentException('Invalid cron pattern');
     }
-    if(is_array($pattern))
+    if(is_string($pattern))
     {
-      return $pattern;
+      if(isset(self::$_templates[$pattern]))
+      {
+        $pattern = self::$_templates[$pattern];
+      }
+      $split = preg_split('/\s+/', $pattern, count(self::$_formats));
+    }
+    elseif(is_array($pattern))
+    {
+      $split = $pattern;
+    }
+    else
+    {
+      throw new \InvalidArgumentException('Invalid cron pattern');
     }
 
-    if(isset(self::$_templates[$pattern]))
-    {
-      $pattern = self::$_templates[$pattern];
-    }
-    $split = preg_split('/\s+/', $pattern, count(self::$_formats));
     if(count($split) < 5)
     {
       throw new \InvalidArgumentException('Invalid cron pattern');

@@ -1,6 +1,6 @@
 {
   "name":              "tomk/cronparser",
-  "description":       "Parse crontab format and get next/previous or check time",
+  "description":       "Parse CRON format and check for time matches, or get next/previous match",
   "version":           "1.0.0",
   "keywords":          ["crontab", "cron"],
   "license":           "MIT",
