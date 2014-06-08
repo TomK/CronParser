@@ -3,6 +3,7 @@
   "description":       "Parse crontab format and get next/previous or check time",
   "version":           "1.0.0",
   "keywords":          ["crontab", "cron"],
+  "license":           "MIT",
   "authors":           [
     {
       "name":     "Tom Kay",
