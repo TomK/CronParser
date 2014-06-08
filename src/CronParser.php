@@ -13,13 +13,6 @@ class CronParser
   protected static $_min = array(0, 0, 1, 1, 0, 1970);
   protected static $_max = array(59, 23, 31, 12, 6, 2099);
   protected static $_intervalIds = array('M', 'H', 'D', 'M', 'D', 'Y');
-  protected static $_templates = array(
-    '@yearly'  => '0 0 1 1 *',
-    '@monthly' => '0 0 1 * *',
-    '@weekly'  => '0 0 * * 0',
-    '@daily'   => '0 0 * * *',
-    '@hourly'  => '0 * * * *'
-  );
   protected static $_groupings = array(
     self::YEAR   => array(self::YEAR),
     self::MONTH  => array(self::MONTH),
@@ -28,24 +21,19 @@ class CronParser
     self::MINUTE => array(self::MINUTE)
   );
 
-  protected static function _resetTime(&$time)
+  protected static function _resetTime(\DateTime &$time)
   {
     if($time === null)
     {
-      $time = time();
+      $time = new \DateTime();
     }
-    elseif($time instanceof \DateTime)
-    {
-      $time = $time->getTimestamp();
-    }
-
-    if(!is_int($time))
+    if(!$time instanceof \DateTime)
     {
       throw new \InvalidArgumentException('Specified time is invalid.');
     }
 
     // trim time back to last round minute
-    $time -= $time % 60;
+    $time->setTime($time->format('H'), $time->format('m'));
   }
 
   protected static function _getInterval($type, $interval)
@@ -61,57 +49,16 @@ class CronParser
     {
       throw new \InvalidArgumentException('Invalid cron pattern');
     }
-    if(is_string($pattern))
+    if($pattern instanceof Expression)
     {
-      if(isset(self::$_templates[$pattern]))
-      {
-        $pattern = self::$_templates[$pattern];
-      }
-      $split = preg_split('/\s+/', $pattern, count(self::$_formats));
-    }
-    elseif(is_array($pattern))
-    {
-      $split = $pattern;
-    }
-    else
-    {
-      throw new \InvalidArgumentException('Invalid cron pattern');
+      return $pattern;
     }
 
-    if(count($split) < 5)
-    {
-      throw new \InvalidArgumentException('Invalid cron pattern');
-    }
-
-    foreach($split as $k => $segment)
-    {
-      $split[$k] = explode(',', $segment);
-
-      foreach($split[$k] as $kk => $part)
-      {
-        preg_match(
-          '/(((?<min>[0-9]+)\-(?<max>[0-9]+))|(?<val>[*0-9]+))(\/(?<mod>[0-9]+))?/',
-          $part,
-          $matches
-        );
-
-        $matches['full'] = $matches[0];
-        foreach($matches as $mk => $mv)
-        {
-          if(is_numeric($mk) || $mv === '')
-          {
-            unset($matches[$mk]);
-          }
-        }
-        $split[$k][$kk] = $matches;
-      }
-    }
-
-    return $split;
+    return Expression::createFromPattern($pattern);
   }
 
   protected static function _getPartDiff(
-    $pattern, $type, $time = null, $reverse = false
+    $pattern, $type, \DateTime $time = null, $reverse = false
   )
   {
     self::_resetTime($time);
@@ -121,8 +68,8 @@ class CronParser
       return 0;
     }
     $fmt  = self::$_formats[$type];
-    $ret  = self::_makeDateTime($time);
-    $curr = intval(date($fmt, $ret->getTimestamp()));
+    $ret  = clone $time;
+    $curr = intval($ret->format($fmt));
 
     $possibles = array();
     foreach($pattern[$type] as $part)
@@ -202,12 +149,12 @@ class CronParser
    * Returns true if the time matches the pattern supplied.
    * Time defaults to current time.
    *
-   * @param      $pattern
-   * @param null $time
+   * @param           $pattern
+   * @param \DateTime $time
    *
    * @return bool
    */
-  public static function isDue($pattern, $time = null)
+  public static function isDue($pattern, \DateTime $time = null)
   {
     self::_resetTime($time);
 
@@ -224,7 +171,7 @@ class CronParser
         continue;
       }
 
-      $cmp = intval(date($fmt, $time));
+      $cmp = intval($time->format($fmt));
 
       $posSuccess = false;
       foreach($pattern[$pos] as $part)
@@ -269,32 +216,33 @@ class CronParser
    * Returns a DateTime object of the next matching time from $time.
    * If $now is true, will accept $time as a match. Otherwise finds the next match in the future.
    *
-   * @param      $pattern
-   * @param null $time
-   * @param bool $now
+   * @param           $pattern
+   * @param \DateTime $time
+   * @param bool      $now
    *
    * @return \DateTime
    * @throws \Exception
    */
-  public static function nextRun($pattern, $time = null, $now = false)
+  public static function nextRun($pattern, \DateTime $time = null, $now = false)
   {
     self::_resetTime($time);
     if(!$now)
     {
-      $time += 60;
+      $time->add(new \DateInterval('PT60S'));
     }
+
     $originalPattern = $pattern;
     $pattern         = self::_parse($pattern);
 
-    $orig = self::_makeDateTime($time);
-    $ret  = self::_makeDateTime($time);
+    $orig = clone $time;
+    $ret  = clone $time;
 
     foreach(self::$_groupings as $pos => $grp)
     {
       $values = array();
       foreach($grp as $type)
       {
-        $v = self::_getPartDiff($pattern, $type, $ret->getTimestamp());
+        $v = self::_getPartDiff($pattern, $type, $ret);
         if($v !== false)
         {
           $values[] = $v;
@@ -329,10 +277,11 @@ class CronParser
       }
     }
 
-    if(!self::isDue($pattern, $ret->getTimestamp()))
+    if(!self::isDue($pattern, $ret))
     {
       throw new \Exception(
-        "Cron Error: Calculated nextRun is not due. $originalPattern $time"
+        'Cron Error: Calculated nextRun is not due. '
+        . $originalPattern . ' ' . $time->format(DATE_RFC822)
       );
     }
 
@@ -343,31 +292,31 @@ class CronParser
    * Returns a DateTime object of the previous matching time from $time.
    * If $now is true, will accept $time as a match. Otherwise finds the next match in the past.
    *
-   * @param      $pattern
-   * @param null $time
-   * @param bool $now
+   * @param           $pattern
+   * @param \DateTime $time
+   * @param bool      $now
    *
    * @return \DateTime
    * @throws \Exception
    */
-  public static function prevRun($pattern, $time = null, $now = false)
+  public static function prevRun($pattern, \DateTime $time = null, $now = false)
   {
     self::_resetTime($time);
     if(!$now)
     {
-      $time -= 60;
+      $time->sub(new \DateInterval('PT60S'));
     }
     $originalPattern = $pattern;
     $pattern         = self::_parse($pattern);
 
-    $ret = self::_makeDateTime($time);
+    $ret = clone $time;
 
     foreach(self::$_groupings as $pos => $grp)
     {
       $values = array();
       foreach($grp as $type)
       {
-        $v = self::_getPartDiff($pattern, $type, $ret->getTimestamp(), true);
+        $v = self::_getPartDiff($pattern, $type, $ret, true);
         if($v !== false)
         {
           $values[] = $v;
@@ -387,38 +336,14 @@ class CronParser
       $ret->sub(self::_getInterval($pos, $diff));
     }
 
-    if(!self::isDue($pattern, $ret->getTimestamp()))
+    if(!self::isDue($pattern, $ret))
     {
       throw new \Exception(
-        "Cron Error: Calculated prevRun is not due. $originalPattern $time"
+        'Cron Error: Calculated nextRun is not due. '
+        . $originalPattern . ' ' . $time->format(DATE_RFC822)
       );
     }
 
     return $ret;
-  }
-
-  /**
-   * @param mixed $anything
-   *
-   * @return \DateTime
-   * @throws \InvalidArgumentException
-   */
-  private static function _makeDateTime($anything)
-  {
-    if(ctype_digit($anything))
-    {
-      return (new \DateTime())->setTimestamp((int)$anything);
-    }
-
-    $anything = strtotime($anything);
-    if($anything !== false)
-    {
-      return (new \DateTime())->setTimestamp($anything);
-    }
-
-    throw new \InvalidArgumentException(
-      'Failed Converting param of \''
-      . gettype($anything) . '\' to DateTime object'
-    );
   }
 }
