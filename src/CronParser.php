@@ -180,7 +180,15 @@ class CronParser
 
   public static function isValid($pattern)
   {
-    return self::_parse($pattern) !== false;
+    try
+    {
+      self::_parse($pattern);
+    }
+    catch(\Exception $e)
+    {
+      return false;
+    }
+    return true;
   }
 
   public static function isDue($pattern, $time = null)
