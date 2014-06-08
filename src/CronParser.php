@@ -21,7 +21,7 @@ class CronParser
     self::MINUTE => array(self::MINUTE)
   );
 
-  protected static function _resetTime(\DateTime &$time)
+  protected static function _resetTime(&$time)
   {
     if($time === null)
     {
