@@ -178,6 +178,13 @@ class CronParser
     return min($possibles);
   }
 
+  /**
+   * Returns true if pattern is valid format, false otherwise
+   *
+   * @param $pattern
+   *
+   * @return bool
+   */
   public static function isValid($pattern)
   {
     try
@@ -191,6 +198,15 @@ class CronParser
     return true;
   }
 
+  /**
+   * Returns true if the time matches the pattern supplied.
+   * Time defaults to current time.
+   *
+   * @param      $pattern
+   * @param null $time
+   *
+   * @return bool
+   */
   public static function isDue($pattern, $time = null)
   {
     self::_resetTime($time);
@@ -249,6 +265,17 @@ class CronParser
     return true;
   }
 
+  /**
+   * Returns a DateTime object of the next matching time from $time.
+   * If $now is true, will accept $time as a match. Otherwise finds the next match in the future.
+   *
+   * @param      $pattern
+   * @param null $time
+   * @param bool $now
+   *
+   * @return \DateTime
+   * @throws \Exception
+   */
   public static function nextRun($pattern, $time = null, $now = false)
   {
     self::_resetTime($time);
@@ -312,6 +339,17 @@ class CronParser
     return $ret;
   }
 
+  /**
+   * Returns a DateTime object of the previous matching time from $time.
+   * If $now is true, will accept $time as a match. Otherwise finds the next match in the past.
+   *
+   * @param      $pattern
+   * @param null $time
+   * @param bool $now
+   *
+   * @return \DateTime
+   * @throws \Exception
+   */
   public static function prevRun($pattern, $time = null, $now = false)
   {
     self::_resetTime($time);
