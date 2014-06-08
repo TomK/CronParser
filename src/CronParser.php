@@ -34,6 +34,15 @@ class CronParser
     {
       $time = time();
     }
+    elseif($time instanceof \DateTime)
+    {
+      $time = $time->getTimestamp();
+    }
+
+    if(!is_int($time))
+    {
+      throw new \InvalidArgumentException('Specified time is invalid.');
+    }
 
     // trim time back to last round minute
     $time -= $time % 60;
@@ -64,7 +73,7 @@ class CronParser
     $split = preg_split('/\s+/', $pattern, count(self::$_formats));
     if(count($split) < 5)
     {
-      return false;
+      throw new \InvalidArgumentException('Invalid cron pattern');
     }
 
     foreach($split as $k => $segment)
@@ -174,7 +183,7 @@ class CronParser
     $pattern = self::_parse($pattern);
     if(!$pattern)
     {
-      return false;
+      throw new \InvalidArgumentException('Invalid cron pattern');
     }
 
     foreach(self::$_formats as $pos => $fmt)
