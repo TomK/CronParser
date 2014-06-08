@@ -8,9 +8,11 @@ Installation
 
 Add this package to your composer.json required section
 
-    "required": {
-      "tomk/cronparser":"*"
-    }
+```
+"required": {
+  "tomk/cronparser":"*"
+}
+```
 
 Usage
 =====
