@@ -4,7 +4,7 @@ CronParser
 PHP class to parse CRON format and check for time matches, or determine next and previous matching times.
 
 Installation
-============
+------------
 
 Add this package to your composer.json required section
 
@@ -15,7 +15,7 @@ Add this package to your composer.json required section
 ```
 
 Usage
-=====
+-----
 
 The following public methods are available.
 
@@ -36,6 +36,6 @@ CronParser::prevRun(string $pattern [, $time = time() [, $now = false]]);
 ```
 
 CRON expression
-===============
+---------------
 
 Please see CRON format on wikipedia for reference: [http://en.wikipedia.org/wiki/Cron#CRON_expression]
