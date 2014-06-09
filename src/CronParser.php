@@ -21,21 +21,6 @@ class CronParser
     self::MINUTE => array(self::MINUTE)
   );
 
-  protected static function _resetTime(&$time)
-  {
-    if($time === null)
-    {
-      $time = new \DateTime();
-    }
-    if(!$time instanceof \DateTime)
-    {
-      throw new \InvalidArgumentException('Specified time is invalid.');
-    }
-
-    // trim time back to last round minute
-    $time->setTime($time->format('H'), $time->format('m'));
-  }
-
   protected static function _getInterval($type, $interval)
   {
     return new \DateInterval(
@@ -58,10 +43,9 @@ class CronParser
   }
 
   protected static function _getPartDiff(
-    $pattern, $type, \DateTime $time = null, $reverse = false
+    $pattern, $type, \DateTime $time, $reverse = false
   )
   {
-    self::_resetTime($time);
     $pattern = self::_parse($pattern);
     if(!isset($pattern[$type]))
     {
@@ -156,7 +140,12 @@ class CronParser
    */
   public static function isDue($pattern, \DateTime $time = null)
   {
-    self::_resetTime($time);
+    if($time === null)
+    {
+      $time = new \DateTime();
+    }
+    // trim time back to last round minute
+    $time->setTime($time->format('H'), $time->format('m'));
 
     $pattern = self::_parse($pattern);
     if(!$pattern)
@@ -225,9 +214,16 @@ class CronParser
    */
   public static function nextRun($pattern, \DateTime $time = null, $now = false)
   {
-    self::_resetTime($time);
+    if($time === null)
+    {
+      $time = new \DateTime();
+    }
+    // trim time back to last round minute
+    $time->setTime($time->format('H'), $time->format('m'));
+
     if(!$now)
     {
+      // skip current minute
       $time->add(new \DateInterval('PT60S'));
     }
 
@@ -301,9 +297,16 @@ class CronParser
    */
   public static function prevRun($pattern, \DateTime $time = null, $now = false)
   {
-    self::_resetTime($time);
+    if($time === null)
+    {
+      $time = new \DateTime();
+    }
+    // trim time back to last round minute
+    $time->setTime($time->format('H'), $time->format('m'));
+
     if(!$now)
     {
+      // skip current minute
       $time->sub(new \DateInterval('PT60S'));
     }
     $originalPattern = $pattern;
