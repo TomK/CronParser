@@ -22,6 +22,10 @@ class Expression implements \ArrayAccess
 
   public static function createFromPattern($pattern)
   {
+    if(!$pattern)
+    {
+      throw new \InvalidArgumentException('Invalid cron pattern');
+    }
     if($pattern instanceof Expression)
     {
       return $pattern;

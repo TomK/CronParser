@@ -28,25 +28,11 @@ class CronParser
     );
   }
 
-  protected static function _parse($pattern)
-  {
-    if(!$pattern)
-    {
-      throw new \InvalidArgumentException('Invalid cron pattern');
-    }
-    if($pattern instanceof Expression)
-    {
-      return $pattern;
-    }
-
-    return Expression::createFromPattern($pattern);
-  }
-
   protected static function _getPartDiff(
     $pattern, $type, \DateTime $time, $reverse = false
   )
   {
-    $pattern = self::_parse($pattern);
+    $pattern = Expression::createFromPattern($pattern);
     if(!isset($pattern[$type]))
     {
       return 0;
@@ -120,7 +106,7 @@ class CronParser
   {
     try
     {
-      self::_parse($pattern);
+      Expression::createFromPattern($pattern);
     }
     catch(\Exception $e)
     {
@@ -147,15 +133,11 @@ class CronParser
     // trim time back to last round minute
     $time->setTime($time->format('H'), $time->format('m'));
 
-    $pattern = self::_parse($pattern);
-    if(!$pattern)
-    {
-      throw new \InvalidArgumentException('Invalid cron pattern');
-    }
+    $expression = Expression::createFromPattern($pattern);
 
     foreach(self::$_formats as $pos => $fmt)
     {
-      if($pos > 4 && !isset($pattern[$pos]))
+      if($pos > 4 && !isset($expression[$pos]))
       {
         continue;
       }
@@ -163,7 +145,7 @@ class CronParser
       $cmp = intval($time->format($fmt));
 
       $posSuccess = false;
-      foreach($pattern[$pos] as $part)
+      foreach($expression[$pos] as $part)
       {
         if($part['full'] == '*' || $part['full'] == $cmp || $posSuccess)
         {
@@ -227,8 +209,7 @@ class CronParser
       $time->add(new \DateInterval('PT60S'));
     }
 
-    $originalPattern = $pattern;
-    $pattern         = self::_parse($pattern);
+    $expression = Expression::createFromPattern($pattern);
 
     $orig = clone $time;
     $ret  = clone $time;
@@ -238,7 +219,7 @@ class CronParser
       $values = array();
       foreach($grp as $type)
       {
-        $v = self::_getPartDiff($pattern, $type, $ret);
+        $v = self::_getPartDiff($expression, $type, $ret);
         if($v !== false)
         {
           $values[] = $v;
@@ -273,11 +254,11 @@ class CronParser
       }
     }
 
-    if(!self::isDue($pattern, $ret))
+    if(!self::isDue($expression, $ret))
     {
       throw new \Exception(
         'Cron Error: Calculated nextRun is not due. '
-        . $originalPattern . ' ' . $time->format(DATE_RFC822)
+        . $pattern . ' ' . $time->format(DATE_RFC822)
       );
     }
 
@@ -309,8 +290,7 @@ class CronParser
       // skip current minute
       $time->sub(new \DateInterval('PT60S'));
     }
-    $originalPattern = $pattern;
-    $pattern         = self::_parse($pattern);
+    $expression = Expression::createFromPattern($pattern);
 
     $ret = clone $time;
 
@@ -319,7 +299,7 @@ class CronParser
       $values = array();
       foreach($grp as $type)
       {
-        $v = self::_getPartDiff($pattern, $type, $ret, true);
+        $v = self::_getPartDiff($expression, $type, $ret, true);
         if($v !== false)
         {
           $values[] = $v;
@@ -339,11 +319,11 @@ class CronParser
       $ret->sub(self::_getInterval($pos, $diff));
     }
 
-    if(!self::isDue($pattern, $ret))
+    if(!self::isDue($expression, $ret))
     {
       throw new \Exception(
         'Cron Error: Calculated nextRun is not due. '
-        . $originalPattern . ' ' . $time->format(DATE_RFC822)
+        . $pattern . ' ' . $time->format(DATE_RFC822)
       );
     }
 
