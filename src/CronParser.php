@@ -131,7 +131,7 @@ class CronParser
       $time = new \DateTime();
     }
     // trim time back to last round minute
-    $time->setTime($time->format('H'), $time->format('m'));
+    $time->setTime($time->format('H'), $time->format('i'));
 
     $expression = Expression::createFromPattern($pattern);
 
@@ -201,7 +201,7 @@ class CronParser
       $time = new \DateTime();
     }
     // trim time back to last round minute
-    $time->setTime($time->format('H'), $time->format('m'));
+    $time->setTime($time->format('H'), $time->format('i'));
 
     if(!$now)
     {
@@ -283,7 +283,7 @@ class CronParser
       $time = new \DateTime();
     }
     // trim time back to last round minute
-    $time->setTime($time->format('H'), $time->format('m'));
+    $time->setTime($time->format('H'), $time->format('i'));
 
     if(!$now)
     {
