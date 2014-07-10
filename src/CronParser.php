@@ -9,6 +9,14 @@ class CronParser
   const MONTH = 3;
   const WEEKDAY = 4;
   const YEAR = 5;
+  protected static $_readableFormats = array(
+    'minute',
+    'hour',
+    'day',
+    'month',
+    'week',
+    'year'
+  );
   protected static $_formats = array('i', 'H', 'd', 'm', 'w', 'Y');
   protected static $_min = array(0, 0, 1, 1, 0, 1970);
   protected static $_max = array(59, 23, 31, 12, 6, 2099);
@@ -90,6 +98,13 @@ class CronParser
           break;
         }
       }
+    }
+
+    if(empty($possibles))
+    {
+      throw new \Exception(
+        ucfirst(self::$_readableFormats[$type]) . ' segment out of range'
+      );
     }
 
     return min($possibles);
