@@ -10,7 +10,7 @@ namespace TomK\CronParser;
 
 class Expression implements \ArrayAccess
 {
-  protected static $_patternCache = [];
+  protected static $_patternCache = array();
 
   protected static $_templates = array(
     '@yearly'  => '0 0 1 1 *',
