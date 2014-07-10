@@ -259,12 +259,15 @@ class CronParser
       {
         for($i = $pos - 1; $i >= 0; $i--)
         {
-          $ret->sub(
-            self::_getInterval(
-              $i,
-              ($ret->format(self::$_formats[$i]) - self::$_min[$i])
-            )
-          );
+          if ($i !== 4)
+          {
+            $ret->sub(
+              self::_getInterval(
+                $i,
+                ($ret->format(self::$_formats[$i]) - self::$_min[$i])
+              )
+            );
+          }
         }
       }
     }

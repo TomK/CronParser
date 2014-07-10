@@ -43,7 +43,7 @@ class Expression implements \ArrayAccess
       {
         $pattern = self::$_templates[$pattern];
       }
-      $split = preg_split('/\s+/', $pattern, 5);
+      $split = preg_split('/\s+/', $pattern, 6);
     }
     else
     {
