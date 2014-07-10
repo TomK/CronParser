@@ -7,12 +7,20 @@ class CronTest extends PHPUnit_Framework_TestCase
   {
     $this->assertTrue(CronParser::isDue('* * * * *'));
 
-    $testTime = new DateTime('midnight');
+    $testTime = new DateTime('2014-01-01 00:00');
     $this->assertTrue(CronParser::isDue('0 * * * *', $testTime));
     $this->assertTrue(CronParser::isDue('0 0 * * *', $testTime));
 
     // zero day is not valid
     $this->assertFalse(CronParser::isDue('0 0 0 * *', $testTime));
+
+    // tuesday
+    $nextTuesday = CronParser::nextRun('0 0 * * 2', $testTime);
+    $this->assertEquals(2, $nextTuesday->format('N'));
+
+    // next year
+    $farFuture = CronParser::nextRun('* * * * * 2099', $testTime);
+    $this->assertEquals(2099, $farFuture->format('Y'));
   }
 
   /**
