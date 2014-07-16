@@ -1,6 +1,6 @@
 CronParser
 ==========
-[![Build Status](https://travis-ci.org/TomK/CronParser.svg?branch=master)](https://travis-ci.org/TomK/CronParser)
+[![Build Status](https://travis-ci.org/TomK/CronParser.svg?branch=master)](https://travis-ci.org/TomK/CronParser) [![Total Downloads](https://poser.pugx.org/tomk/cronparser/downloads.svg)](https://packagist.org/packages/tomk/cronparser)
 
 PHP class to parse CRON format and check for time matches, or determine next and previous matching times.
 
