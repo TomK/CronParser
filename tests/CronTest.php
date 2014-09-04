@@ -5,6 +5,8 @@ class CronTest extends PHPUnit_Framework_TestCase
 {
   public function testCrons()
   {
+    CronParser::nextRun('0 0 ' . date('j') . ' * *');
+
     $this->assertTrue(CronParser::isDue('* * * * *'));
 
     $testTime = new DateTime('2014-01-01 00:00');
@@ -21,6 +23,10 @@ class CronTest extends PHPUnit_Framework_TestCase
     // next year
     $farFuture = CronParser::nextRun('* * * * * 2099', $testTime);
     $this->assertEquals(2099, $farFuture->format('Y'));
+
+    // next tuesday 15th
+    $tuesdayFifteenth = CronParser::nextRun('* * 15 * 2', $testTime);
+    $this->assertEquals(2099, $tuesdayFifteenth->format('Y'));
   }
 
   /**
